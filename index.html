@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Untitled</title>
+    
+
+  </head>
+    
+  <body>
+  <!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>B.Learn Advanced Kit - حزمة الألعاب المطورة</title>
+    <style>
+        :root { --primary: #2ec4b6; --secondary: #ff9f1c; --bg: #f0fdfa; --text: #011627; }
+        * { box-shadow: none; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, sans-serif; }
+        body { background-color: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; color: var(--text); direction: rtl; }
+        header { text-align: center; margin-bottom: 10px; }
+        .logo { font-size: 26px; font-weight: bold; color: var(--primary); }
+        .logo span { color: var(--secondary); }
+        .score-board { background: #fff; padding: 5px 20px; border-radius: 15px; font-weight: bold; color: var(--primary); font-size: 18px; border: 2px solid var(--primary); margin-bottom: 10px; }
+        .nav-menu { display: flex; flex-wrap: wrap; justify-content: center; gap: 5px; margin-bottom: 15px; }
+        .btn-nav { background: #fff; border: 2px solid var(--primary); padding: 8px 12px; border-radius: 20px; cursor: pointer; font-weight: bold; font-size: 12px; }
+        .btn-nav.active { background: var(--primary); color: white; }
+        .lang-switch { background: var(--secondary); color: white; border: none; padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; margin-bottom: 10px; }
+        .game-container { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); max-width: 850px; width: 100%; text-align: center; }
+        .hint-text { font-size: 15px; color: #666; margin-bottom: 15px; font-style: italic; background: #fffbeb; padding: 8px; border-radius: 10px; border-right: 4px solid var(--secondary); }
+        .slots-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-bottom: 20px; }
+        .slot-box { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 160px; }
+        .slot { width: 140px; height: 140px; border: 3px dashed var(--primary); border-radius: 15px; display: flex; justify-content: center; align-items: center; position: relative; background: rgba(46,196,182,0.01); transition: 0.2s; }
+        .slot.hovered { background: rgba(46,196,182,0.1); }
+        .slot-desc { font-size: 11px; color: #555; font-weight: 500; text-align: center; padding: 5px; line-height: 1.3; height: 50px; display: flex; align-items: center; justify-content: center; background: #f8fafc; border-radius: 8px; width: 100%; }
+        .cards-pool { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; background: #f9f9f9; padding: 15px; border-radius: 15px; min-height: 120px; align-items: center; }
+        .card { width: 110px; height: 110px; background: white; border: 2px solid #e2e8f0; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: grab; user-select: none; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: 0.2s; }
+        .card:active { cursor: grabbing; }
+        .card .emoji { font-size: 35px; }
+        .card .name { font-size: 12px; font-weight: bold; text-align: center; margin-top: 4px; color: #334155; }
+        .message { font-size: 18px; font-weight: bold; margin: 15px 0; min-height: 25px; }
+        .success { color: #2a9d8f; animation: pop 0.3s ease; }
+        .error { color: #e76f51; }
+        .reset-btn { background: var(--secondary); color: white; border: none; padding: 8px 25px; border-radius: 20px; font-weight: bold; cursor: pointer; }
+        .slot .card { width: 100%; height: 100%; border: none; background: transparent; box-shadow: none; }
+        @keyframes pop { 0% { transform: scale(0.9); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">B.Learn <span>Kit</span></div>
+    </header>
+    <button class="lang-switch" id="langBtn" onclick="toggleLanguage()">Switch to English 🇬🇧</button>
+    <div class="score-board" id="scoreBoard">🏆 النقاط: 0</div>
+    <div class="nav-menu" id="navMenu">
+        <button class="btn-nav active" onclick="switchGame('frog')">دورة حياة الضفدع</button>
+        <button class="btn-nav" onclick="switchGame('butterfly')">دورة حياة الفراشة</button>
+        <button class="btn-nav" onclick="switchGame('plantLife')">دورة حياة النبات</button>
+        <button class="btn-nav" onclick="switchGame('plantParts')">أجزاء النبات ووظائفها</button>
+        <button class="btn-nav" onclick="switchGame('humanParts')">أعضاء جسم الإنسان</button>
+    </div>
+    <div class="game-container">
+        <div class="hint-text" id="hintText">قم بمطابقة العنصر الصحيح بناءً على الوظيفة أو المرحلة العلمية المكتوبة أسفل الصندوق!</div>
+        <div class="slots-grid" id="slotsGrid"></div>
+        <div class="cards-pool" id="cardsPool"></div>
+        <div class="message" id="message"></div>
+        <button class="reset-btn" id="resetBtn" onclick="initGame()">إعادة اللعب 🔄</button>
+    </div>
+    <script>
+        const gameData = {
+            ar: {
+                successWin: "🎉 مذهل! أنت عالم حقيقي، أكملت التحدي بنجاح! 🌟",
+                errorTry: "اممم، محاولة قريبة! اقرأ الوظيفة جيداً وجرب مكاناً آخر 🧠",
+                keepGoing: "إجابة علمية صحيحة! بطل (+10 نقاط) 👏", reset: "إعادة اللعب 🔄", score: "🏆 النقاط: ",
+                hint: "💡 التحدي: اقرأ الوظيفة العلمية أسفل كل صندوق، ثم اسحب الكارت المناسب وضعه داخل الصندوق!",
+                titles: ["دورة حياة الضفدع", "دورة حياة الفراشة", "دورة حياة النبات", "أجزاء النبات ووظائفها", "أعضاء جسم الإنسان"],
+                games: {
+                    frog: {
+                        slots: [{id:"1", desc:"بيوض هلامية محمية داخل مياه البركة الساكنة"}, {id:"2", desc:"كائن مائي يتنفس بالخياشيم ويملك ذيلاً للسباحة"}, {id:"3", desc:"تبدأ رئتاه بالنمو وتظهر أرجله ويقصر ذيله تدريجياً"}, {id:"4", desc:"برمائي مكتمل النمو يتنفس بالرئة والجلد ويقفز على اليابسة"}],
+                        cards: [{id:"1", name:"كتلة البيض", emoji:"🪺"}, {id:"2", name:"أبو ذنيبة", emoji:"🐟"}, {id:"3", name:"ضفدع صغير بذيل", emoji:"🦎"}, {id:"4", name:"ضفدع بالغ", emoji:"🐸"}]
+                    },
+                    butterfly: {
+                        slots: [{id:"1", desc:"توضع بدقة فوق أوراق الشجر المفضلة لتتغذى عليها لاحقاً"}, {id:"2", desc:"كائن شره يأكل الأوراق بنهم وينسلخ جلده لينمو"}, {id:"3", desc:"مرحلة السكون والتحول داخل غلاف حريري صلب"}, {id:"4", desc:"كائن طائر رائع بأجنحة متناظرة يمتص رحيق الأزهار"}],
+                        cards: [{id:"1", name:"البيضة", emoji:"🥚"}, {id:"2", name:"اليرقة", emoji:"🐛"}, {id:"3", name:"الشرنقة", emoji:"🪵"}, {id:"4", name:"الفراشة", emoji:"🦋"}]
+                    },
+                    plantLife: {
+                        slots: [{id:"1", desc:"جزء ساكن يحتوي على الجنين والغذاء وينتظر الماء لينمو"}, {id:"2", desc:"بداية خروج جذر صغير لأسفل البركة وبداية برعم أخضر لأعلى"}, {id:"3", desc:"نبتة شابة تنمو أوراقها لتبدأ بصنع غذائها عبر الشمس"}, {id:"4", desc:"نبات كبير ناضج تظهر أزهاره لتصنع بذوراً جديدة"}],
+                        cards: [{id:"1", name:"البذرة", emoji:"🌱"}, {id:"2", name:"الإنبات / البرعم", emoji:"🪴"}, {id:"3", name:"نبتة صغيرة", emoji:"🌿"}, {id:"4", name:"نبات مكتمل", emoji:"🌳"}]
+                    },
+                    plantParts: {
+                        slots: [{id:"1", desc:"أثبت النبات في الأرض وأمتص الماء والأملاح من التربة"}, {id:"2", desc:"أنبوب قوي يحمل الأوراق وينقل الماء والغذاء لباقي الأجزاء"}, {id:"3", desc:"مصنع الغذاء الأخضر، أتنفس الهواء وأمتص ضوء الشمس"}, {id:"4", desc:"أنا الجزء المسؤول عن التكاثر وصناعة البذور بألوان زاهية"}],
+                        cards: [{id:"1", name:"الجذور", emoji:"🥕"}, {id:"2", name:"الساق", emoji:"🎋"}, {id:"3", name:"الأوراق", emoji:"🍃"}, {id:"4", name:"الزهرة", emoji:"🌸"}]
+                    },
+                    humanParts: {
+                        slots: [{id:"1", desc:"مركز القيادة والتحكم، أستقبل الإشارات وأتحكم بالتفكير والحركة"}, {id:"2", desc:"مضخة عضلية قوية تعمل بلا توقف لتوزيع الدم لكل الجسم"}, {id:"3", desc:"نمبئ بالهواء النقي لنستخلص الأكسجين أثناء عملية التنفس"}, {id:"4", desc:"كالخلاط الذكي، أقوم بهضم الطعام وتحويله إلى طاقة تفيدك"}],
+                        cards: [{id:"1", name:"الدماغ", emoji:"🧠"}, {id:"2", name:"القلب", emoji:"🫀"}, {id:"3", name:"الرئتان", emoji:"🫁"}, {id:"4", name:"المعدة", emoji:"🥣"}]
+                    }
+                }
+            },
+            en: {
+                successWin: "🎉 Incredible! You are a true scientist! Kit completed! 🌟",
+                errorTry: "Hmm, close! Read the scientific function carefully and try again 🧠",
+                keepGoing: "Correct scientific match! Great job (+10 pts) 👏", reset: "Reset Game 🔄", score: "🏆 Score: ",
+                hint: "💡 Challenge: Read the scientific function under each box, then drag the correct card into the box!",
+                titles: ["Frog Life Cycle", "Butterfly Life Cycle", "Plant Life Cycle", "Plant Parts & Functions", "Human Organs"],
+                games: {
+                    frog: {
+                        slots: [{id:"1", desc:"Jelly-protected eggs laid safely inside calm pond water"}, {id:"2", desc:"Aquatic creature breathing through gills with a swimming tail"}, {id:"3", desc:"Lungs begin to grow, legs appear, and the tail shortens"}, {id:"4", desc:"Adult amphibian breathing with lungs/skin, jumping on land"}],
+                        cards: [{id:"1", name:"Eggs / Spawn", emoji:"🪺"}, {id:"2", name:"Tadpole", emoji:"🐟"}, {id:"3", name:"Froglet", emoji:"🦎"}, {id:"4", name:"Adult Frog", emoji:"🐸"}]
+                    },
+                    butterfly: {
+                        slots: [{id:"1", desc:"Carefully laid on favorite leaves to feed the future larva"}, {id:"2", desc:"Voracious eater that molts its skin to grow bigger"}, {id:"3", desc:"The resting stage of transformation inside a silky shell"}, {id:"4", desc:"Beautiful flying creature with colorful symmetrical wings"}],
+                        cards: [{id:"1", name:"Egg", emoji:"🥚"}, {id:"2", name:"Caterpillar", emoji:"🐛"}, {id:"3", name:"Chrysalis", emoji:"🪵"}, {id:"4", name:"Butterfly", emoji:"🦋"}]
+                    },
+                    plantLife: {
+                        slots: [{id:"1", desc:"Resting structure holding embryo and food, waiting for water"}, {id:"2", desc:"A tiny root grows down and a green shoot grows up"}, {id:"3", desc:"Young plant growing leaves to produce food via photosynthesis"}, {id:"4", desc:"Mature plant producing flowers to build new seeds"}],
+                        cards: [{id:"1", name:"Seed", emoji:"🌱"}, {id:"2", name:"Sprout", emoji:"🪴"}, {id:"3", name:"Seedling", emoji:"🌿"}, {id:"4", name:"Adult Plant", emoji:"🌳"}]
+                    },
+                    plantParts: {
+                        slots: [{id:"1", desc:"I anchor the plant and absorb water/nutrients from soil"}, {id:"2", desc:"A strong tube holding leaves and transporting nutrients"}, {id:"3", desc:"The green food factory that absorbs sunlight and breathes"}, {id:"4", desc:"Responsible for reproduction and making seeds with bright colors"}],
+                        cards: [{id:"1", name:"Roots", emoji:"🥕"}, {id:"2", name:"Stem", emoji:"🎋"}, {id:"3", name:"Leaves", emoji:"🍃"}, {id:"4", name:"Flower", emoji:"🌸"}]
+                    },
+                    humanParts: {
+                        slots: [{id:"1", desc:"The command center controlling your thoughts, motion, and body"}, {id:"2", desc:"A muscular pump working non-stop to deliver blood"}, {id:"3", desc:"We expand with fresh air to extract vital oxygen for your body"}, {id:"4", desc:"Like a smart blender, I digest food and turn it into energy"}],
+                        cards: [{id:"1", name:"Brain", emoji:"🧠"}, {id:"2", name:"Heart", emoji:"🫀"}, {id:"3", name:"Lungs", emoji:"🫁"}, {id:"4", name:"Stomach", emoji:"🥣"}]
+                    }
+                }
+            }
+        };
+        let currentLang = 'ar', currentGame = 'frog', draggedItem = null, totalScore = 0;
+        function toggleLanguage() {
+            currentLang = currentLang === 'ar' ? 'en' : 'ar';
+            document.body.style.direction = currentLang === 'ar' ? 'rtl' : 'ltr';
+            document.getElementById('langBtn').innerText = currentLang === 'ar' ? "Switch to English 🇬🇧" : "تحويل إلى العربية 🌍";
+            document.querySelectorAll('.btn-nav').forEach((btn, i) => {
+                const keys = ['frog', 'butterfly', 'plantLife', 'plantParts', 'humanParts'];
+                btn.innerText = gameData[currentLang].titles[i];
+            });
+            initGame();
+        }
+        function switchGame(gameKey) {
+            currentGame = gameKey;
+            document.querySelectorAll('.btn-nav').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            initGame();
+        }
+        function initGame() {
+            const dict = gameData[currentLang];
+            document.getElementById('resetBtn').innerText = dict.reset;
+            document.getElementById('scoreBoard').innerText = dict.score + totalScore;
+            document.getElementById('hintText').innerText = dict.hint;
+            document.getElementById('message').innerText = '';
+            const grid = document.getElementById('slotsGrid');
+            const pool = document.getElementById('cardsPool');
+            grid.innerHTML = ''; pool.innerHTML = '';
+            dict.games[currentGame].slots.forEach(s => {
+                grid.innerHTML += `<div class="slot-box"><div class="slot" data-id="${s.id}"></div><div class="slot-desc">${s.desc}</div></div>`;
+            });
+            document.querySelectorAll('.slot').forEach(slot => {
+                slot.addEventListener('dragover', e => e.preventDefault());
+                slot.addEventListener('dragenter', function() { this.classList.add('hovered'); });
+                slot.addEventListener('dragleave', function() { this.classList.remove('hovered'); });
+                slot.addEventListener('drop', function() { this.classList.remove('hovered'); handleDrop(this, draggedItem); });
+            });
+            const cardsData = [...dict.games[currentGame].cards].sort(() => Math.random() - 0.5);
+            cardsData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card'; card.setAttribute('draggable', 'true'); card.setAttribute('data-id', item.id);
+                card.innerHTML = `<div class="emoji">${item.emoji}</div><div class="name">${item.name}</div>`;
+                card.addEventListener('dragstart', function() { draggedItem = this; });
+                card.addEventListener('dragend', function() { draggedItem = null; });
+                card.addEventListener('touchstart', function() { draggedItem = this; }, {passive: true});
+                pool.appendChild(card);
+            });
+        }
+        function handleDrop(slot, card) {
+            if(!card || slot.children.length > 0) return;
+            const msg = document.getElementById('message');
+            if(slot.getAttribute('data-id') === card.getAttribute('data-id')) {
+                slot.appendChild(card); card.setAttribute('draggable', 'false');
+                totalScore += 10;
+                document.getElementById('scoreBoard').innerText = gameData[currentLang].score + totalScore;
+                const correctCount = document.querySelectorAll('.slot .card').length;
+                msg.className = "message success";
+                msg.innerText = correctCount === 4 ? gameData[currentLang].successWin : gameData[currentLang].keepGoing;
+            } else {
+                msg.className = "message error"; msg.innerText = gameData[currentLang].errorTry;
+            }
+        }
+        window.onload = initGame;
+    </script>
+</body>
+</html>
+    
+  </body>
+  
+</html>
